@@ -142,8 +142,10 @@ export default function SmartResponder() {
                 style={{
                   width: "100%", display: "flex", gap: 10, alignItems: "center",
                   padding: "10px 12px", borderRadius: 8, border: "1px solid",
-                  borderColor: r.id === selectedId ? "var(--accent-glow)" : "transparent",
+                  borderColor: r.id === selectedId ? "var(--accent)" : "transparent",
                   background: r.id === selectedId ? "var(--accent-bg)" : "var(--bg-elevated)",
+                  boxShadow: r.id === selectedId ? "0 4px 12px var(--accent-glow)" : "none",
+                  transition: "all 0.2s ease",
                   cursor: "pointer",
                 }}
               >

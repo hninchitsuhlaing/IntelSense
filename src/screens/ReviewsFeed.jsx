@@ -104,7 +104,7 @@ export default function ReviewsFeed() {
 const inputStyle = {
   background: "var(--bg-input)",
   border: "1px solid var(--border)",
-  color: "white",
+  color: "black",
   padding: "10px",
   borderRadius: "8px",
   fontSize: "13px",

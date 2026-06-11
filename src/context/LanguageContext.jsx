@@ -10,7 +10,7 @@ export function LanguageProvider({ children }) {
   });
   
   const [dataLang, setDataLang] = useState(() => {
-    return localStorage.getItem("intelsense_datalang") || "Thai";
+    return localStorage.getItem("intelsense_datalang") || "Auto-detect";
   });
 
   // Save to local storage when changed

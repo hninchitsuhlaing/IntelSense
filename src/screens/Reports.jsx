@@ -7,13 +7,13 @@ import { useLanguage } from "../context/LanguageContext.jsx";
 
 export default function Reports() {
   const { reviews } = useReviews();
-  const weekData   = useTrendData(14, 60, 20);
+  const _baseWeek = useTrendData(13, 60, 20);
   const { t } = useLanguage();
 
   const depts = ["Housekeeping", "Front Desk", "Maintenance", "F&B", "IT"];
 
   // Memoize live data aggregations
-  const { summaryData, dualGroups, barData } = useMemo(() => {
+  const { summaryData, dualGroups, barData, weekData } = useMemo(() => {
     const summary = depts.map(dept => {
       const dRev = reviews.filter(r => r.department === dept);
       const total = dRev.length;
@@ -43,17 +43,50 @@ export default function Reports() {
       };
     });
 
-    // For "Today's Reviews" bar chart, we'll map the total counts per department
-    // Alternatively, just distribute the total reviews across 10 random buckets
-    let bData = [];
-    if (reviews.length > 0) {
-      bData = Array.from({length: 10}).map(() => Math.floor(Math.random() * reviews.length));
-    } else {
-      bData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    }
+    let bData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    reviews.forEach((r, i) => {
+      const hash = ((r.text?.length || 0) + i) % 10;
+      bData[hash] += 1;
+    });
 
-    return { summaryData: summary, dualGroups: dual, barData: bData };
-  }, [reviews]);
+    const posReviews = reviews.filter(r => r.sentiment === "Positive").length;
+    let liveScore = reviews.length === 0 ? 80 : Math.round((posReviews / reviews.length) * 100);
+    const dynamicWeekData = [..._baseWeek, liveScore];
+
+    return { summaryData: summary, dualGroups: dual, barData: bData, weekData: dynamicWeekData };
+  }, [reviews, _baseWeek]);
+
+  const handleAction = async (action) => {
+    if (action === "exportPdf") {
+      window.print();
+    } else if (action === "exportCsv") {
+      const headers = ["Department,Score,Reviews,Issues,Avg Response Time,Trend"];
+      const rows = summaryData.map(row => `${row.dept},${row.score},${row.reviews},${row.issues},${row.rt},${row.trend}`);
+      const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Department_Performance_Report.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (action === "shareReport") {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'HospitiSense Report',
+            text: 'Check out the latest department performance report.',
+            url: window.location.href,
+          });
+        } catch (err) {
+          console.error("Share failed", err);
+        }
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
+      }
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16, height: "100%", animation: "fadeSlideIn 0.35s ease" }}>
@@ -61,7 +94,7 @@ export default function Reports() {
       {/*  Export Row  */}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
         {["exportPdf", "exportCsv", "shareReport"].map(key => (
-          <button key={key} style={{
+          <button key={key} onClick={() => handleAction(key)} style={{
             background: "var(--bg-elevated)", border: "1px solid var(--border)",
             borderRadius: 8, padding: "8px 18px", color: "var(--text-primary)",
             fontSize: 13, fontWeight: 600, cursor: "pointer"

@@ -119,9 +119,9 @@ export const translations = {
     reviews: "Reviews",
     issues: "Issues",
     trend: "Trend",
-    exportPdf: "Export PDF",
-    exportCsv: "Export CSV",
-    shareReport: "Share Report",
+    exportPdf: "Export as PDF",
+    exportCsv: "Export as CSV",
+    shareReport: "Share",
     
     liveUpdating: "Live updating",
     aiGenerated: "AI Generated",

@@ -195,7 +195,7 @@ export default function Settings({ apiKey, setApiKey }) {
           <SectionHead icon="🌐" title={t("language")} sub="Display & data language" />
           {[
             { label: t("uiLanguage"), val: uiLang, set: setUiLang, opts: ["English", "Thai", "Japanese", "Chinese", "Russian", "Arabic"] },
-            { label: t("reviewLanguage"), val: dataLang, set: setDataLang, opts: ["Thai", "English", "Japanese", "Korean", "Auto-detect"] },
+            { label: t("reviewLanguage"), val: dataLang, set: setDataLang, opts: ["Auto-detect"] },
           ].map(f => (
             <div key={f.label} style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)", letterSpacing: 1, marginBottom: 4, textTransform: "uppercase" }}>{f.label}</div>

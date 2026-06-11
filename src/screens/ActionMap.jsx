@@ -1,16 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, PriorityBadge, AILabel } from "../components/UI.jsx";
-import { FLOOR_ROOMS } from "../data/mockData.js";
 import { ROOM_COLOR } from "../utils/helpers.js";
 import { useLanguage } from "../context/LanguageContext.jsx";
 import { generateSuggestedAction } from "../services/aiService.jsx";
+import { useReviews } from "../context/ReviewsContext.jsx";
 
 const FLOORS = [1,2,3, 4, 5];
 
 export default function ActionMap() {
-  const [floor, setFloor] = useState(5);
+  const [floor, setFloor] = useState(1);
   const [selected, setSelected] = useState(null);
   const { uiLang, t } = useLanguage();
+  const { reviews } = useReviews();
   const [aiAction, setAiAction] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
 
@@ -24,7 +25,46 @@ export default function ActionMap() {
     }
   }, [selected, uiLang]);
 
-  const rooms = FLOOR_ROOMS[floor];
+  const dynamicRooms = useMemo(() => {
+    const layout = {};
+    for (let f = 1; f <= 5; f++) {
+      layout[f] = Array.from({ length: 8 }).map((_, i) => ({
+        num: `${f}0${i + 1}`,
+        status: "green"
+      }));
+    }
+
+    const severityMap = { green: 0, yellow: 1, red: 2 };
+
+    reviews.forEach(r => {
+      const rmNum = r.room?.toString().trim();
+      if (!rmNum || rmNum.length !== 3) return;
+      const fNum = parseInt(rmNum[0], 10);
+      
+      if (fNum >= 1 && fNum <= 5 && layout[fNum]) {
+        const roomObj = layout[fNum].find(rm => rm.num === rmNum);
+        if (roomObj) {
+           let newStatus = "green";
+           if (r.priority === "HIGH" || (r.priority !== "LOW" && r.sentiment === "Negative")) {
+             newStatus = "red";
+           } else if (r.priority === "MEDIUM" || r.sentiment === "Negative") {
+             newStatus = "yellow";
+           }
+
+           if (severityMap[newStatus] > severityMap[roomObj.status]) {
+             roomObj.status = newStatus;
+             roomObj.issue = r.text;
+             roomObj.sentiment = r.sentiment;
+             roomObj.priority = r.priority;
+           }
+        }
+      }
+    });
+
+    return layout;
+  }, [reviews]);
+
+  const rooms = dynamicRooms[floor] || [];
 
   const handleRoomClick = (room) => {
     if (room.status === "green") { setSelected(null); return; }
