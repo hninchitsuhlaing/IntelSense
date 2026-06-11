@@ -2,6 +2,10 @@
 
 IntelSense is an AI-powered Cyber Threat Intelligence Dashboard that helps security analysts monitor, analyze, and visualize cyber threats.
 
+Live Demo: https://intel-sense.vercel.app
+
+IntelSense is an AI-powered Cyber Threat Intelligence Dashboard that helps security analysts monitor, analyze, and visualize cyber threats.
+
 ## Features
 
 - Threat Intelligence Dashboard
